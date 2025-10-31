@@ -10,23 +10,25 @@ dotenv.config();
 // ====== CONFIGURACIÓN DEL SERVIDOR ======
 const app = express();
 
+// ✅ Configurar CORS ANTES que cualquier otra cosa
+app.use(cors({
+  origin: [
+    "https://myseries-frontend.vercel.app", // Frontend en producción
+    "http://localhost:5500" // Para pruebas locales
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"],
+}));
+
 // Middleware
 app.use(express.json());
-
-// ✅ Configurar CORS para permitir tu frontend
-app.use(
-  cors({
-    origin: [
-      "https://myseries-frontend.vercel.app", // Frontend en producción
-      "http://localhost:5500",                // Para pruebas locales
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type"],
-  })
-);
-
 // Rutas
 app.use("/api/series", seriesRoutes);
+
+// ====== RUTA BASE ======
+app.get("/", (req, res) => {
+  res.send("Servidor MySeries funcionando correctamente ✅");
+});
 
 // ====== CONEXIÓN A MONGODB ======
 const PORT = process.env.PORT || 5000;
@@ -40,8 +42,4 @@ mongoose
     );
   })
   .catch((err) => console.error("❌ Error al conectar a MongoDB:", err));
-
-// ====== RUTA BASE ======
-app.get("/", (req, res) => {
-  res.send("Servidor MySeries funcionando correctamente ✅");
-});
+  
