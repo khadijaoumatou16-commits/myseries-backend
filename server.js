@@ -33,7 +33,8 @@ app.get("/", (req, res) => {
 
 // ===== CONEXIÓN A MONGODB =====
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGODB_URI;
+
 
 mongoose.connect(MONGO_URI)
   .then(() => {
