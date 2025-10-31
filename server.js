@@ -1,89 +1,47 @@
-// =============================
-// 🌍 IMPORTACIONES
-// =============================
+// ====== IMPORTACIONES ======
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import serieRoutes from "./routes/serieroutes.js";
+import seriesRoutes from "./routes/serieroutes.js";
 
 dotenv.config();
 
+// ====== CONFIGURACIÓN DEL SERVIDOR ======
 const app = express();
 
-// =============================
-// 📂 CONFIGURACIÓN DE RUTAS Y DIRECTORIOS
-// =============================
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Middleware
+app.use(express.json());
 
-// =============================
-// ⚙️ MIDDLEWARES
-// =============================
-
-// 🌐 Configuración de CORS
-const allowedOrigins = [
-  "https://myseries-frontend.vercel.app", // tu frontend desplegado en Vercel
-  "http://localhost:5173",                // opcional: para desarrollo local
-];
-
+// ✅ Configurar CORS para permitir tu frontend
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.error("❌ Bloqueado por CORS:", origin);
-        callback(new Error("No permitido por CORS"));
-      }
-    },
-    credentials: true,
+    origin: [
+      "https://myseries-frontend.vercel.app", // Frontend en producción
+      "http://localhost:5500",                // Para pruebas locales
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"],
   })
 );
 
-app.use(express.json());
+// Rutas
+app.use("/api/series", seriesRoutes);
 
-// 📂 Servir archivos estáticos (videos, subtítulos, imágenes, etc.)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// =============================
-// 📦 RUTAS API
-// =============================
-app.use("/api/series", serieRoutes);
-
-// =============================
-// 🏠 RUTA PRINCIPAL
-// =============================
-app.get("/", (req, res) => {
-  res.send("✅ Servidor funcionando correctamente (MySeries Backend)");
-});
-
-// =============================
-// ⚙️ CONFIGURACIONES DE ENTORNO
-// =============================
+// ====== CONEXIÓN A MONGODB ======
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
-
-// =============================
-// 🧠 CONEXIÓN A MONGODB
-// =============================
+const MONGO_URI = process.env.MONGO_URI;
 mongoose
   .connect(MONGO_URI)
   .then(() => {
-    console.log("✅ Conectado a MongoDB Atlas correctamente");
+    console.log("✅ Conectado a MongoDB Atlas");
     app.listen(PORT, () =>
-      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`)
+      console.log(`🚀 Servidor escuchando en puerto ${PORT}`)
     );
   })
-  .catch((err) => {
-    console.error("❌ Error al conectar a MongoDB Atlas:", err.message);
-  });
+  .catch((err) => console.error("❌ Error al conectar a MongoDB:", err));
 
-// =============================
-// ⚠️ MANEJADOR DE ERRORES NO CONTROLADOS
-// =============================
-process.on("unhandledRejection", (reason) => {
-  console.error("⚠️ Promesa no manejada:", reason);
+// ====== RUTA BASE ======
+app.get("/", (req, res) => {
+  res.send("Servidor MySeries funcionando correctamente ✅");
 });
